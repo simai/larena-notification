@@ -1,0 +1,29 @@
+{
+  "schema": "larena.evidence_file_map.v1",
+  "package": "larena/notification",
+  "batch": "product-adapters/batch-1/notification-current",
+  "files": [
+    ".larena/launch-context.json",
+    "phpstan.neon.dist",
+    "scripts/lint.php",
+    "scripts/test-placeholder.php",
+    "scripts/validate-larena-package.php",
+    "src/Contracts/DeliveryAttempt.php",
+    "src/Contracts/DeliveryChannel.php",
+    "src/Contracts/NotificationAdminItem.php",
+    "src/Contracts/NotificationEventDescriptor.php",
+    "src/Contracts/NotificationGateway.php",
+    "src/Contracts/NotificationMessage.php",
+    "src/Contracts/RecipientPreference.php",
+    "src/Contracts/RecipientRef.php",
+    "src/Contracts/TemplateDescriptor.php",
+    "src/Enums/ChannelKind.php",
+    "src/Enums/DeliveryAttemptState.php",
+    "src/Enums/NotificationSeverity.php",
+    "src/Enums/PreferenceDecision.php",
+    "tests/Unit/NotificationContractTest.php",
+    "tests/Unit/NotificationFailsClosedTest.php"
+  ],
+  "runtime_files_added": false,
+  "contract_skeleton_files_added": true
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "larena.graph_sync_proposal.v1",
+  "package": "larena/notification",
+  "batch": "product-adapters/batch-1/notification-current",
+  "status": "no_canonical_graph_change_requested",
+  "canonical_update_allowed": false,
+  "must_not_apply_automatically": true,
+  "summary": "Notification batch 1 implemented interface-first contract skeletons within the existing package graph boundaries. No canonical graph/spec change is requested.",
+  "implemented_features": [
+    "notification.event_registry",
+    "notification.template_rendering",
+    "notification.recipient_preference_policy",
+    "notification.delivery_channels",
+    "notification.delivery_attempt_lifecycle",
+    "notification.admin_center"
+  ],
+  "notes": [
+    "Delivery runtime, template renderer, queue jobs, provider clients, admin UI and persistence require separate launch records."
+  ]
+}

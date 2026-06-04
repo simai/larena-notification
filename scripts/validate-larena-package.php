@@ -33,18 +33,56 @@ if (($specRef['canonical_update_allowed'] ?? null) !== false) {
 if (($launchContext['package'] ?? null) !== 'larena/notification') {
     $errors[] = '.larena/launch-context.json package must be larena/notification';
 }
-if (($launchContext['coding_started'] ?? null) !== false) {
-    $errors[] = 'coding_started must be false before a coding launch record.';
-}
 if (!str_starts_with((string) ($launchContext['evidence_path'] ?? ''), 'docs/project-management/evidence/')) {
     $errors[] = 'launch-context evidence_path must start with docs/project-management/evidence/';
 }
 if (!str_starts_with((string) ($launchContext['graph_sync_proposal_path'] ?? ''), (string) ($launchContext['evidence_path'] ?? '__missing__'))) {
     $errors[] = 'graph_sync_proposal_path must be inside evidence_path';
 }
-foreach (['src', 'config', 'database', 'routes', 'resources', 'tests', 'lang'] as $runtimePath) {
-    if (is_dir($runtimePath)) {
-        $errors[] = "{$runtimePath}/ is not allowed in this clean pre-codegen baseline commit.";
+$allowedStatuses = [
+    'repository_prepared_pending_review',
+    'coding_started',
+    'contract_skeleton_review_passed',
+];
+if (!in_array((string) ($launchContext['status'] ?? ''), $allowedStatuses, true)) {
+    $errors[] = 'launch-context status is not allowed for this package stage.';
+}
+
+$codingStarted = ($launchContext['coding_started'] ?? null) === true;
+if (!$codingStarted) {
+    foreach (['src', 'config', 'database', 'routes', 'resources', 'tests', 'lang'] as $runtimePath) {
+        if (is_dir($runtimePath)) {
+            $errors[] = "{$runtimePath}/ is not allowed before a coding launch record.";
+        }
+    }
+}
+
+if ($codingStarted) {
+    if (($launchContext['launch_record_ref'] ?? null) !== 'specs/implementation-planning/launch-records/notification-batch-1-contract-skeletons-current.json') {
+        $errors[] = 'coding_started requires the current Notification batch 1 launch record.';
+    }
+
+    $requiredContractFiles = [
+        'src/Contracts/DeliveryAttempt.php',
+        'src/Contracts/DeliveryChannel.php',
+        'src/Contracts/NotificationAdminItem.php',
+        'src/Contracts/NotificationEventDescriptor.php',
+        'src/Contracts/NotificationGateway.php',
+        'src/Contracts/NotificationMessage.php',
+        'src/Contracts/RecipientPreference.php',
+        'src/Contracts/RecipientRef.php',
+        'src/Contracts/TemplateDescriptor.php',
+        'src/Enums/ChannelKind.php',
+        'src/Enums/DeliveryAttemptState.php',
+        'src/Enums/NotificationSeverity.php',
+        'src/Enums/PreferenceDecision.php',
+        'tests/Unit/NotificationContractTest.php',
+        'tests/Unit/NotificationFailsClosedTest.php',
+    ];
+    foreach ($requiredContractFiles as $file) {
+        if (!is_file($file)) {
+            $errors[] = "Missing required Notification contract skeleton file: {$file}";
+        }
     }
 }
 if ($errors !== []) {
@@ -53,4 +91,6 @@ if ($errors !== []) {
     }
     exit(1);
 }
-echo "Larena Notification clean pre-codegen baseline is valid.\n";
+echo $codingStarted
+    ? "Larena Notification contract skeleton launch context is valid.\n"
+    : "Larena Notification clean pre-codegen baseline is valid.\n";
