@@ -1,0 +1,17 @@
+package: larena/notification
+title: Larena Notification
+status: repository_prepared
+cluster: product-adapters
+batch: batch-0-clean-pre-codegen-baseline
+features:
+  - notification.admin_center
+  - notification.delivery_attempt_lifecycle
+  - notification.delivery_channels
+  - notification.event_registry
+  - notification.recipient_preference_policy
+  - notification.template_rendering
+runtime:
+  php: "^8.3"
+  laravel: "^13.0"
+evidence:
+  path: docs/project-management/evidence/product-adapters/batch-0/notification-clean-baseline/
