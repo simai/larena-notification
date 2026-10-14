@@ -1,8 +1,8 @@
 package: larena/notification
 title: Larena Notification
-status: repository_prepared
+status: coding_started
 cluster: product-adapters
-batch: batch-0-clean-pre-codegen-baseline
+batch: notification-inbox-v1
 features:
   - notification.admin_center
   - notification.delivery_attempt_lifecycle
@@ -14,4 +14,4 @@ runtime:
   php: "^8.3"
   laravel: "^13.0"
 evidence:
-  path: docs/project-management/evidence/product-adapters/batch-0/notification-clean-baseline/
+  path: docs/project-management/evidence/notification-inbox-v1/

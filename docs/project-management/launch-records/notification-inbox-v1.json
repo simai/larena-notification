@@ -1,0 +1,42 @@
+{
+  "schema": "larena.pre_coding_launch_record.v1",
+  "id": "larena.launch.notification.inbox_v1",
+  "status": "coding_started",
+  "coding_started": true,
+  "created_at": "2026-10-14",
+  "target_package": "larena/notification",
+  "base_commit": "2a35653",
+  "owner_decision": "store important administrator notifications (warning, error and package server events) for 30 days and show them in an admin section with a table view (2026-10-14)",
+  "selected_features": [
+    "notification.admin_center"
+  ],
+  "allowed_files": [
+    ".larena/launch-context.json",
+    "README.md",
+    "composer.json",
+    "composer.lock",
+    "database/migrations/2026_10_14_000001_create_larena_notifications_table.php",
+    "docs/project-management/launch-records/notification-inbox-v1.json",
+    "module.yaml",
+    "phpstan.neon.dist",
+    "scripts/test-placeholder.php",
+    "scripts/validate-larena-package.php",
+    "src/Console/PruneNotificationsCommand.php",
+    "src/Providers/NotificationServiceProvider.php",
+    "src/Runtime/InboxNotification.php",
+    "src/Runtime/InboxPage.php",
+    "src/Runtime/NotificationInbox.php",
+    "src/Runtime/NotificationRejected.php",
+    "tests/Feature/NotificationInboxTest.php",
+    "tests/TestCase.php"
+  ],
+  "forbidden_behavior": [
+    "external delivery channels (mail, messenger, SMS)",
+    "template rendering",
+    "queue jobs",
+    "http:// links in notifications"
+  ],
+  "nonclaims": [
+    "A launch record authorizes a bounded coding wave; it does not authorize release or deployment."
+  ]
+}

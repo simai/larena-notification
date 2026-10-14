@@ -1,0 +1,8 @@
+{
+  "deviations": [
+    {
+      "item": "notification.inbox.list / notification.inbox.acknowledge access operations",
+      "decision": "not registered: the inbox is personal and scoped to the signed-in person"
+    }
+  ]
+}

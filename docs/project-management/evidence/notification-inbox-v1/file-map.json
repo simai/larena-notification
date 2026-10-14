@@ -1,0 +1,23 @@
+{
+  "package": "larena/notification",
+  "files": [
+    ".larena/launch-context.json",
+    "composer.json",
+    "composer.lock",
+    "module.yaml",
+    "phpstan.neon.dist",
+    "scripts/validate-larena-package.php",
+    "scripts/test-placeholder.php",
+    "README.md",
+    "docs/project-management/launch-records/notification-inbox-v1.json",
+    "database/migrations/2026_10_14_000001_create_larena_notifications_table.php",
+    "src/Runtime/NotificationInbox.php",
+    "src/Runtime/InboxNotification.php",
+    "src/Runtime/InboxPage.php",
+    "src/Runtime/NotificationRejected.php",
+    "src/Providers/NotificationServiceProvider.php",
+    "src/Console/PruneNotificationsCommand.php",
+    "tests/TestCase.php",
+    "tests/Feature/NotificationInboxTest.php"
+  ]
+}

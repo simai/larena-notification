@@ -58,8 +58,9 @@ if (!$codingStarted) {
 }
 
 if ($codingStarted) {
-    if (($launchContext['launch_record_ref'] ?? null) !== 'specs/implementation-planning/launch-records/notification-batch-1-contract-skeletons-current.json') {
-        $errors[] = 'coding_started requires the current Notification batch 1 launch record.';
+    $launchRecord = (string) ($launchContext['launch_record_ref'] ?? '');
+    if ($launchRecord !== 'docs/project-management/launch-records/notification-inbox-v1.json' || !is_file($launchRecord)) {
+        $errors[] = 'coding_started requires the Notification inbox v1 launch record.';
     }
 
     $requiredContractFiles = [
@@ -78,6 +79,9 @@ if ($codingStarted) {
         'src/Enums/PreferenceDecision.php',
         'tests/Unit/NotificationContractTest.php',
         'tests/Unit/NotificationFailsClosedTest.php',
+        'database/migrations/2026_10_14_000001_create_larena_notifications_table.php',
+        'src/Runtime/NotificationInbox.php',
+        'src/Providers/NotificationServiceProvider.php',
     ];
     foreach ($requiredContractFiles as $file) {
         if (!is_file($file)) {
@@ -92,5 +96,5 @@ if ($errors !== []) {
     exit(1);
 }
 echo $codingStarted
-    ? "Larena Notification contract skeleton launch context is valid.\n"
+    ? "Larena Notification inbox launch context is valid.\n"
     : "Larena Notification clean pre-codegen baseline is valid.\n";

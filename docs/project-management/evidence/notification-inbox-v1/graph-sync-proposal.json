@@ -1,0 +1,8 @@
+{
+  "package": "larena/notification",
+  "canonical_update_allowed": false,
+  "features": [
+    "notification.admin_center"
+  ],
+  "proposal": "Mark notification.admin_center as having an inbox runtime (storage, 30-day retention, admin section)."
+}
