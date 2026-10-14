@@ -48,6 +48,7 @@ final class NotificationInbox
         string $source,
         ?string $href = null,
         ?string $dedupeKey = null,
+        bool $shown = false,
     ): InboxNotification {
         $recipientRef = $this->recipient($recipientRef);
         if (! in_array($status, self::STATUSES, true)) {
@@ -101,7 +102,8 @@ final class NotificationInbox
             'dedupe_key' => $dedupeKey,
             'repeat_count' => 1,
             'created_at' => $this->format($now),
-            'shown_at' => null,
+            // A message the person has just seen on the page is not popped up again.
+            'shown_at' => $shown ? $this->format($now) : null,
             'read_at' => null,
         ]);
 

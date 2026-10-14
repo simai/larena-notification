@@ -96,9 +96,11 @@ final class NotificationInboxTest extends TestCase
         $inbox = $this->inbox();
         $inbox->record('user:admin_identity:1', 'warning', 'Новое', null, 'larena/backup:run');
 
-        self::assertCount(1, $inbox->takeUnshown('user:admin_identity:1'));
+        $inbox->record('user:admin_identity:1', 'error', 'Seen on the page', null, 'page:admin', null, null, true);
+
+        self::assertSame(['Новое'], array_map(static fn ($item): string => $item->title, $inbox->takeUnshown('user:admin_identity:1')));
         self::assertSame([], $inbox->takeUnshown('user:admin_identity:1'));
-        self::assertSame(1, $inbox->unreadCount('user:admin_identity:1'));
+        self::assertSame(2, $inbox->unreadCount('user:admin_identity:1'));
     }
 
     public function test_refuses_bad_input_and_plain_http_links(): void
