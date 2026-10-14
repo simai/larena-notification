@@ -27,6 +27,8 @@ final class NotificationInbox
 
     public const RETENTION_DAYS = 30;
 
+    public const SORTS = ['title', 'status', 'source', 'created_at'];
+
     private const DEDUPE_WINDOW_SECONDS = 600;
 
     /** @var Closure(): DateTimeImmutable */
@@ -120,7 +122,9 @@ final class NotificationInbox
     /**
      * A page of the recipient's notifications, newest first.
      *
-     * @param array{status?: string|null, source?: string|null, unread?: bool, search?: string|null} $filter
+     * The sort is one of title, status, source or created_at, ascending or descending; newest first by default.
+     *
+     * @param array{status?: string|null, source?: string|null, unread?: bool, search?: string|null, sort?: string|null, direction?: string|null} $filter
      */
     public function list(string $recipientRef, array $filter = [], int $offset = 0, int $limit = 20): InboxPage
     {
@@ -147,7 +151,8 @@ final class NotificationInbox
             });
         }
         $total = (clone $query)->count();
-        $rows = $query->orderByDesc('created_at')->orderByDesc('id')
+        $sort = in_array($filter['sort'] ?? null, self::SORTS, true) ? $filter['sort'] : 'created_at';
+        $rows = $query->orderBy($sort, ($filter['direction'] ?? null) === 'asc' ? 'asc' : 'desc')->orderByDesc('created_at')->orderByDesc('id')
             ->offset(max(0, $offset))->limit(max(1, min(200, $limit)))->get();
 
         return new InboxPage(array_values(array_map(fn (object $row): InboxNotification => $this->item($row), $rows->all())), $total);

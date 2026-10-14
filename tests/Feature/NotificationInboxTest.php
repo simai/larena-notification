@@ -54,6 +54,9 @@ final class NotificationInboxTest extends TestCase
         self::assertSame(1, $inbox->list('user:admin_identity:1', ['search' => '50%_'])->total);
         self::assertSame(0, $inbox->list('user:admin_identity:1', ['search' => '5%_'])->total);
         self::assertSame(1, $inbox->list('user:admin_identity:1', [], 1, 1)->items === [] ? 0 : 1);
+        self::assertSame(['Диск почти заполнен', 'Импорт не удался'], array_map(static fn ($item): string => $item->title,
+            $inbox->list('user:admin_identity:1', ['sort' => 'title', 'direction' => 'asc'])->items));
+        self::assertSame('error', $inbox->list('user:admin_identity:1', ['sort' => 'status', 'direction' => 'asc'])->items[0]->status);
     }
 
     public function test_the_same_dedupe_key_within_ten_minutes_refreshes_instead_of_adding_a_copy(): void
