@@ -42,7 +42,12 @@
     "tests/Feature/NotificationInboxTest.php",
     "tests/TestCase.php",
     "tests/Unit/NotificationContractTest.php",
-    "tests/Unit/NotificationFailsClosedTest.php"
+    "tests/Unit/NotificationFailsClosedTest.php",
+    "LICENSE",
+    "NOTICE",
+    "AUTHORS",
+    "CITATION.cff",
+    "REUSE.toml"
   ],
   "forbidden_files": [
     "src/Channels/*",

@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you refer to Larena Notification, please cite it as below."
+title: "Larena Notification"
+abstract: "Larena Notification: Shared system package for transactional, system and operator notifications across Larena: event intake, recipient resolution, template rendering, channel routing, delivery, preferences, diagnostics and admin notification center integration."
+type: software
+authors:
+  - family-names: "Zabarov"
+    given-names: "Rim"
+    email: "rim@zabarov.com"
+license: Apache-2.0
+repository-code: "https://github.com/simai/larena-notification"
