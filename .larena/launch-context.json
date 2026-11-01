@@ -47,7 +47,8 @@
     "NOTICE",
     "AUTHORS",
     "CITATION.cff",
-    "REUSE.toml"
+    "REUSE.toml",
+    "src/Runtime/NotificationSources.php"
   ],
   "forbidden_files": [
     "src/Channels/*",

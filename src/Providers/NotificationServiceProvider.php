@@ -10,6 +10,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
 use Larena\Notification\Console\PruneNotificationsCommand;
 use Larena\Notification\Runtime\NotificationInbox;
+use Larena\Notification\Runtime\NotificationSources;
 
 /**
  * The notification inbox: its table, the inbox over the application's connection and the daily removal of
@@ -22,6 +23,10 @@ final class NotificationServiceProvider extends ServiceProvider
     {
         $this->app->scoped(NotificationInbox::class, static fn (Application $app): NotificationInbox => new NotificationInbox(
             $app->make(DatabaseManager::class)->connection(),
+        ));
+        // Packages name their sources here (NotificationSources::declare, from their own provider).
+        $this->app->singleton(NotificationSources::class, static fn (Application $app): NotificationSources => new NotificationSources(
+            $app->bound('translator') ? $app->make('translator') : null,
         ));
     }
 

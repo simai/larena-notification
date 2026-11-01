@@ -28,7 +28,8 @@
     "src/Runtime/NotificationInbox.php",
     "src/Runtime/NotificationRejected.php",
     "tests/Feature/NotificationInboxTest.php",
-    "tests/TestCase.php"
+    "tests/TestCase.php",
+    "src/Runtime/NotificationSources.php"
   ],
   "forbidden_behavior": [
     "external delivery channels (mail, messenger, SMS)",

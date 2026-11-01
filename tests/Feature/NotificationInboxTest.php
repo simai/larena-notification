@@ -10,6 +10,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\DatabaseManager;
 use Larena\Notification\Runtime\NotificationInbox;
 use Larena\Notification\Runtime\NotificationRejected;
+use Larena\Notification\Runtime\NotificationSources;
 use Larena\Notification\Tests\TestCase;
 
 final class NotificationInboxTest extends TestCase
@@ -146,6 +147,24 @@ final class NotificationInboxTest extends TestCase
         $this->artisan('larena:notifications:prune')->assertSuccessful();
         $events = array_map(static fn ($event): string => (string) $event->command, $this->app->make(Schedule::class)->events());
         self::assertNotSame([], array_filter($events, static fn (string $command): bool => str_contains($command, 'larena:notifications:prune')));
+    }
+
+    public function test_packages_name_their_sources_and_the_longest_prefix_wins(): void
+    {
+        $this->app['translator']->addLines(['admin.warning' => 'Server warning', 'admin.stale' => 'Backup is stale'], 'en', 'demo');
+        $sources = $this->app->make(NotificationSources::class);
+        self::assertSame($sources, $this->app->make(NotificationSources::class));
+        $sources->declare('env:warning:', 'demo::admin.warning');
+        $sources->declare('env:warning:backup_stale', 'demo::admin.stale');
+        $sources->declare('Not a source!', 'demo::admin.warning');
+        $sources->declare('env:', '');
+        $sources->declare('larena/backup:', 'demo::admin.missing');
+
+        self::assertSame('Backup is stale', $sources->name('env:warning:backup_stale'));
+        self::assertSame('Server warning', $sources->name('env:warning:disk_full'));
+        self::assertSame('env:other', $sources->name('env:other'));
+        // A label without a translation never shows its key.
+        self::assertSame('larena/backup:run', $sources->name('larena/backup:run'));
     }
 
     private function inbox(): NotificationInbox
