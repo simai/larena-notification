@@ -29,7 +29,8 @@
     "src/Runtime/NotificationRejected.php",
     "tests/Feature/NotificationInboxTest.php",
     "tests/TestCase.php",
-    "src/Runtime/NotificationSources.php"
+    "src/Runtime/NotificationSources.php",
+    "database/migrations/2026_11_18_000001_add_object_and_resolution_to_larena_notifications_table.php"
   ],
   "forbidden_behavior": [
     "external delivery channels (mail, messenger, SMS)",

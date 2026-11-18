@@ -48,7 +48,8 @@
     "AUTHORS",
     "CITATION.cff",
     "REUSE.toml",
-    "src/Runtime/NotificationSources.php"
+    "src/Runtime/NotificationSources.php",
+    "database/migrations/2026_11_18_000001_add_object_and_resolution_to_larena_notifications_table.php"
   ],
   "forbidden_files": [
     "src/Channels/*",

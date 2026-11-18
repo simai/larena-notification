@@ -74,10 +74,64 @@ final class NotificationInboxTest extends TestCase
         self::assertSame('2026-10-14 12:05:00', $again->createdAt);
         self::assertSame(1, $this->inbox()->list('user:admin_identity:1')->total);
 
-        $this->later(900);
+        // Still open a day later: the same record again, not a second one (one condition, one record).
+        $this->later(86400);
         $third = $this->inbox()->record('user:admin_identity:1', 'error', 'Бэкап не удался', null, 'larena/backup:run', null, 'backup:failed');
-        self::assertNotSame($first->id, $third->id);
-        self::assertSame(2, $this->inbox()->list('user:admin_identity:1')->total);
+        self::assertSame($first->id, $third->id);
+        self::assertSame(3, $third->repeatCount);
+        self::assertSame(1, $this->inbox()->list('user:admin_identity:1')->total);
+    }
+
+    public function test_a_problem_and_its_end_are_one_record_that_becomes_read_and_comes_back_as_news(): void
+    {
+        $inbox = $this->inbox();
+        $mine = $inbox->record('user:admin_identity:1', 'error', 'demo.test не отвечает', null, 'env:warning:site_down', '/admin/server/sites/demo.test',
+            'env:site:demo.test', false, 'demo.test');
+        $theirs = $inbox->record('user:admin_identity:2', 'error', 'demo.test не отвечает', null, 'env:warning:site_down', null, 'env:site:demo.test');
+        $this->later(420);
+
+        self::assertSame(2, $this->inbox()->resolve('env:site:demo.test', 'снова работает'));
+        $ended = $this->inbox()->find('user:admin_identity:1', $mine->id);
+        self::assertNotNull($ended);
+        self::assertTrue($ended->resolved());
+        self::assertSame('снова работает', $ended->resolution);
+        self::assertSame('2026-10-14 12:07:00', $ended->resolvedAt);
+        self::assertFalse($ended->unread(), 'good news needs no click');
+        self::assertSame('demo.test', $ended->object);
+        self::assertSame(1, $this->inbox()->list('user:admin_identity:1')->total, 'no second record for «решено»');
+        self::assertSame(0, $this->inbox()->resolve('env:site:demo.test'), 'resolved once');
+        self::assertTrue($this->inbox()->find('user:admin_identity:2', $theirs->id)?->resolved());
+
+        // It happens again an hour later: news again, a new record.
+        $this->later(3600);
+        $again = $this->inbox()->record('user:admin_identity:1', 'error', 'demo.test не отвечает', null, 'env:warning:site_down', null, 'env:site:demo.test');
+        self::assertNotSame($mine->id, $again->id);
+        self::assertNull($again->object, 'what it is about is named by each record');
+        self::assertSame(['demo.test'], $this->inbox()->objects('user:admin_identity:1'));
+        self::assertSame(1, $this->inbox()->list('user:admin_identity:1', ['object' => 'demo.test'])->total);
+        // One recipient's resolve leaves the others' open.
+        $this->inbox()->record('user:admin_identity:2', 'error', 'demo.test не отвечает', null, 'env:warning:site_down', null, 'env:site:demo.test');
+        self::assertSame(1, $this->inbox()->resolve('env:site:demo.test', null, 'user:admin_identity:1'));
+        self::assertSame(1, $this->inbox()->unreadCount('user:admin_identity:2'));
+    }
+
+    public function test_the_pages_own_failures_are_diagnostics_not_notifications(): void
+    {
+        $inbox = $this->inbox();
+        try {
+            $inbox->record('user:admin_identity:1', 'error', 'The action was refused', null, 'page:sf-data-view:port_request_invalid');
+            self::fail('a page failure is not a notification');
+        } catch (NotificationRejected $rejected) {
+            self::assertSame('notification_source_diagnostic', $rejected->getMessage());
+        }
+        // One kept before the change is no longer read, counted or offered as a source.
+        $this->app->make(DatabaseManager::class)->connection()->table(NotificationInbox::TABLE)->insert(['id' => 'old-page-failure',
+            'recipient_ref' => 'user:admin_identity:1', 'status' => 'error', 'title' => 'The action was refused', 'source' => 'page:admin',
+            'repeat_count' => 1, 'created_at' => '2026-10-14 11:00:00']);
+        self::assertSame(0, $inbox->unreadCount('user:admin_identity:1'));
+        self::assertSame(0, $inbox->list('user:admin_identity:1')->total);
+        self::assertSame([], $inbox->sources('user:admin_identity:1'));
+        self::assertNull($inbox->find('user:admin_identity:1', 'old-page-failure'));
     }
 
     public function test_read_and_read_all_touch_only_the_recipients_notifications(): void
@@ -100,7 +154,7 @@ final class NotificationInboxTest extends TestCase
         $inbox = $this->inbox();
         $inbox->record('user:admin_identity:1', 'warning', 'Новое', null, 'larena/backup:run');
 
-        $inbox->record('user:admin_identity:1', 'error', 'Seen on the page', null, 'page:admin', null, null, true);
+        $inbox->record('user:admin_identity:1', 'error', 'Seen on the page', null, 'larena/backup:verify', null, null, true);
 
         self::assertSame(['Новое'], array_map(static fn ($item): string => $item->title, $inbox->takeUnshown('user:admin_identity:1')));
         self::assertSame([], $inbox->takeUnshown('user:admin_identity:1'));
