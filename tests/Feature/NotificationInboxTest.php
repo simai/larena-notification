@@ -161,6 +161,41 @@ final class NotificationInboxTest extends TestCase
         self::assertSame(2, $inbox->unreadCount('user:admin_identity:1'));
     }
 
+    public function test_two_pages_taking_at_the_same_moment_never_get_the_same_notification(): void
+    {
+        $recipient = 'user:admin_identity:1';
+        $writer = $this->inbox();
+        foreach (['Первое', 'Второе', 'Третье'] as $title) {
+            $writer->record($recipient, 'warning', $title, null, 'larena/backup:run');
+            $this->later(1);
+        }
+
+        // Two requests, each on its own connection to the same database file.
+        $config = $this->app['config'];
+        $config->set('database.connections.notification_testing_second', $config->get('database.connections.notification_testing'));
+        $databases = $this->app->make(DatabaseManager::class);
+        $second = new NotificationInbox($databases->connection('notification_testing_second'), fn (): DateTimeImmutable => $this->now);
+
+        // The first page has read its candidates and asks the clock before claiming them; right then the second page
+        // takes everything it can see.
+        $secondTook = null;
+        $first = new NotificationInbox($databases->connection(), function () use (&$secondTook, $second, $recipient): DateTimeImmutable {
+            if ($secondTook === null) {
+                $secondTook = $second->takeUnshown($recipient);
+            }
+
+            return $this->now;
+        });
+        $firstTook = $first->takeUnshown($recipient);
+
+        $titles = static fn (array $items): array => array_map(static fn ($item): string => $item->title, $items);
+        self::assertSame(['Первое', 'Второе', 'Третье'], $titles($secondTook ?? []));
+        self::assertSame([], $titles($firstTook));
+        self::assertSame([], $first->takeUnshown($recipient));
+        self::assertSame([], $second->takeUnshown($recipient));
+        self::assertSame(3, $writer->unreadCount($recipient));
+    }
+
     public function test_refuses_bad_input_and_plain_http_links(): void
     {
         $cases = [

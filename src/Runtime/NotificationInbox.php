@@ -247,16 +247,27 @@ final class NotificationInbox
      * Unread notifications the recipient has not been shown yet, oldest first, marked shown as they are
      * handed out: a page shows each of them once.
      *
+     * Two pages asking at the same moment never get the same notification: each one is claimed by an update that
+     * only succeeds while it is still unshown, and only the claimed ones are handed out. The claim is one statement
+     * per row, so it holds alike on SQLite and MySQL without a lock or a transaction.
+     *
      * @return list<InboxNotification>
      */
     public function takeUnshown(string $recipientRef, int $limit = 5): array
     {
         $rows = $this->mine($recipientRef)->whereNull('shown_at')->whereNull('read_at')
             ->orderBy('created_at')->limit(max(1, $limit))->get();
-        $items = array_values(array_map(fn (object $row): InboxNotification => $this->item($row), $rows->all()));
-        if ($items !== []) {
-            $this->mine($recipientRef)->whereIn('id', array_map(static fn (InboxNotification $item): string => $item->id, $items))
-                ->update(['shown_at' => $this->format($this->now())]);
+        if ($rows->isEmpty()) {
+            return [];
+        }
+        $shownAt = $this->format($this->now());
+        $items = [];
+        foreach ($rows->all() as $row) {
+            $claimed = $this->mine($recipientRef)->where('id', (string) $row->id)->whereNull('shown_at')
+                ->update(['shown_at' => $shownAt]);
+            if ($claimed === 1) {
+                $items[] = $this->item($row);
+            }
         }
 
         return $items;
