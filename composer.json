@@ -32,8 +32,8 @@
         "phpstan/phpstan": "^2.0"
     },
     "scripts": {
-        "test": "php scripts/test-placeholder.php && php vendor/bin/phpunit tests/Feature --colors=never",
-        "test:unit": "php scripts/test-placeholder.php",
+        "test": "php vendor/bin/phpunit tests --colors=never",
+        "test:unit": "php vendor/bin/phpunit tests/Unit --colors=never",
         "lint": "php scripts/lint.php",
         "analyse": "php vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --no-progress --memory-limit=512M",
         "validate:larena": "php scripts/validate-larena-package.php",

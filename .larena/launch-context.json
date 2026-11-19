@@ -35,6 +35,7 @@
     "src/Enums/NotificationSeverity.php",
     "src/Enums/PreferenceDecision.php",
     "src/Providers/NotificationServiceProvider.php",
+    "config/notification.php",
     "src/Runtime/InboxNotification.php",
     "src/Runtime/InboxPage.php",
     "src/Runtime/NotificationInbox.php",

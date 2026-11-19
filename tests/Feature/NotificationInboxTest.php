@@ -228,14 +228,37 @@ final class NotificationInboxTest extends TestCase
         self::assertSame('Свежее', $this->inbox()->list('user:admin_identity:1')->items[0]->title);
     }
 
-    public function test_the_provider_binds_the_inbox_and_schedules_the_daily_prune(): void
+    public function test_the_provider_binds_the_inbox_and_the_prune_command(): void
     {
         $this->app->make(NotificationInbox::class)->record('user:admin_identity:1', 'error', 'T', null, 'larena/a:b');
         self::assertSame(1, $this->app->make(NotificationInbox::class)->unreadCount('user:admin_identity:1'));
 
         $this->artisan('larena:notifications:prune')->assertSuccessful();
-        $events = array_map(static fn ($event): string => (string) $event->command, $this->app->make(Schedule::class)->events());
-        self::assertNotSame([], array_filter($events, static fn (string $command): bool => str_contains($command, 'larena:notifications:prune')));
+    }
+
+    public function test_the_daily_prune_is_not_scheduled_unless_the_application_turns_it_on(): void
+    {
+        self::assertFalse($this->app['config']->get('larena-notification.scheduler.enabled'));
+        self::assertSame([], $this->scheduledPrunes());
+    }
+
+    public function test_the_daily_prune_is_scheduled_when_the_flag_is_on(): void
+    {
+        $this->app['config']->set('larena-notification.scheduler.enabled', true);
+
+        $prunes = $this->scheduledPrunes();
+
+        self::assertCount(1, $prunes);
+        self::assertSame('0 0 * * *', $prunes[0]->expression);
+    }
+
+    /** @return list<\Illuminate\Console\Scheduling\Event> the prune's events on a schedule resolved now */
+    private function scheduledPrunes(): array
+    {
+        $this->app->forgetInstance(Schedule::class);
+
+        return array_values(array_filter($this->app->make(Schedule::class)->events(),
+            static fn ($event): bool => str_contains((string) $event->command, 'larena:notifications:prune')));
     }
 
     public function test_packages_name_their_sources_and_the_longest_prefix_wins(): void

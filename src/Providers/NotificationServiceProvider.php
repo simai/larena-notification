@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Larena\Notification\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
@@ -14,13 +16,15 @@ use Larena\Notification\Runtime\NotificationSources;
 
 /**
  * The notification inbox: its table, the inbox over the application's connection and the daily removal of
- * notifications older than 30 days. The inbox is personal — each person reads only their own — so it adds no
- * access operation; whoever may open the admin shell may read what was addressed to them.
+ * notifications older than 30 days, scheduled only where larena-notification.scheduler.enabled is on. The inbox is
+ * personal — each person reads only their own — so it adds no access operation; whoever may open the admin shell may
+ * read what was addressed to them.
  */
 final class NotificationServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->mergeConfigFrom(__DIR__.'/../../config/notification.php', 'larena-notification');
         $this->app->scoped(NotificationInbox::class, static fn (Application $app): NotificationInbox => new NotificationInbox(
             $app->make(DatabaseManager::class)->connection(),
         ));
@@ -36,7 +40,10 @@ final class NotificationServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([PruneNotificationsCommand::class]);
         }
-        $this->callAfterResolving(Schedule::class, static function (Schedule $schedule): void {
+        $this->callAfterResolving(Schedule::class, static function (Schedule $schedule, Container $app): void {
+            if (!(bool) $app->make(Config::class)->get('larena-notification.scheduler.enabled', false)) {
+                return;
+            }
             $schedule->command('larena:notifications:prune')->daily()->withoutOverlapping();
         });
     }
